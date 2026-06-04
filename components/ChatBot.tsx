@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ChatMessageContent from "@/components/ChatMessageContent";
 
 type Message = {
   role: "user" | "bot";
@@ -110,7 +111,11 @@ export default function ChatBot() {
                       : "bg-gray-100 text-gray-800 rounded-bl-sm"
                   }`}
                 >
-                  {msg.text}
+                  {msg.role === "bot" ? (
+                    <ChatMessageContent text={msg.text} />
+                  ) : (
+                    msg.text
+                  )}
                 </div>
               </div>
             ))}

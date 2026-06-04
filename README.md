@@ -1,19 +1,17 @@
 # Taskmate
 
-**Chapter 5「AIをチャットに接続する」** のサンプルプロジェクトです。
+**Chapter 6「プロンプトで役割を与える」** のサンプルプロジェクトです。
 
-架空のタスク管理SaaS「Taskmate」のランディングページに、Gemini API を使った AI チャットボットを接続しています。
+架空のタスク管理SaaS「Taskmate」のランディングページに、Gemini API を使った問い合わせ対応チャットボットを接続しています。
 
 ---
 
 ## このチャプターで学ぶこと
 
-- **API Route の作成** — `app/api/chat/route.ts` で POST を受け、AI 回答を JSON で返す
-- **環境変数の設定** — API キーをサーバー側だけで使う（クライアントに露出させない）
-- **フロントエンドから API を呼び出す** — `ChatBot.tsx` から `fetch` で `/api/chat` を叩く
-- **AI の回答を画面に表示する** — 返ってきた `{ answer }` をチャット UI に描画する
-
-プロンプト設計やロール付与は **Chapter 6** で行います。
+- **システムプロンプトの設定** — `generateText` の `system` オプションで AI に役割を与える
+- **役割の定義** — 問い合わせ対応チャットボットとしての振る舞いを指示する
+- **サービス情報の注入** — `data/service.ts` の内容をプロンプトに組み込む
+- **FAQ データの注入** — `data/faq.ts` の Q/A をプロンプトに組み込み、正確な回答を促す
 
 ---
 
@@ -32,10 +30,11 @@ Taskmate/
 │   ├── ChatBot.tsx        # AI チャット UI
 │   └── …                  # LP 各セクション
 ├── lib/
-│   └── ai.ts              # Gemini 呼び出し（Vercel AI SDK）
+│   ├── ai.ts              # Gemini 呼び出し（Vercel AI SDK）
+│   └── prompt.ts          # システムプロンプトの組み立て
 └── data/
-    ├── service.ts
-    └── faq.ts             # LP の FAQ セクション用（AI には渡さない）
+    ├── service.ts         # サービス情報（LP・AI プロンプト共用）
+    └── faq.ts             # FAQ データ（LP・AI プロンプト共用）
 ```
 
 ---
