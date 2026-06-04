@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Taskmate
 
-## Getting Started
+**Chapter 3「簡単なWebサイトを作る」** のサンプルプロジェクトです。
 
-First, run the development server:
+架空のタスク管理SaaS「Taskmate」のランディングページを題材にしています。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## このチャプターで学ぶこと
+
+- Next.js App Router の基本的なファイル構成
+- Tailwind CSS を使ったスタイリング
+- コンポーネント分割の考え方
+- データ定義ファイル（TypeScript）の使い方
+- レスポンシブ対応の基本
+- Vercel を使ったホスティング・デプロイ
+
+---
+
+## プロジェクト構成
+
+```
+Taskmate/
+├── app/
+│   ├── layout.tsx       # レイアウト・メタ情報
+│   ├── page.tsx         # ページ本体（各セクションを組み込み）
+│   └── globals.css      # グローバルスタイル
+├── components/
+│   ├── Header.tsx       # ナビゲーションヘッダー
+│   ├── Hero.tsx         # ファーストビュー（モックUI付き）
+│   ├── Problem.tsx      # 課題提示セクション
+│   ├── Features.tsx     # 機能紹介セクション
+│   ├── HowItWorks.tsx   # 使い方ステップ（モックUI付き）
+│   ├── Pricing.tsx      # 料金プランセクション
+│   ├── FAQ.tsx          # よくある質問（アコーディオン）
+│   ├── CTA.tsx          # コンバージョンセクション
+│   └── Footer.tsx       # フッター
+└── data/
+    ├── service.ts       # サービス情報・機能・料金プランのデータ定義
+    └── faq.ts           # FAQのデータ定義
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 起動方法
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+ブラウザで [http://localhost:3000](http://localhost:3000) を開くと確認できます。
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## デプロイ（Vercel）
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+このチャプターでは、作成したLPをVercelでホスティングするところまで行います。
 
-## Deploy on Vercel
+Vercelは、GitHubのパブリックリポジトリと連携するだけで無料でデプロイできます。Next.jsの開発元でもあるため、設定なしですぐに動作します。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### デプロイ手順
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. このリポジトリをGitHubにpushする
+2. [vercel.com](https://vercel.com) にアクセスし、GitHubアカウントでサインアップ
+3. 「Add New Project」からリポジトリを選択
+4. 設定はデフォルトのままで「Deploy」をクリック
+
+デプロイが完了すると、`https://your-project.vercel.app` のようなURLが発行されます。
+以降、`main` ブランチにpushするたびに自動でデプロイが走ります。
+
+---
+
+## 技術スタック
+
+| 技術                    | 用途           |
+| ----------------------- | -------------- |
+| Next.js 16 (App Router) | フレームワーク |
+| TypeScript              | 型安全な実装   |
+| Tailwind CSS v4         | スタイリング   |
+| Vercel                  | ホスティング   |
