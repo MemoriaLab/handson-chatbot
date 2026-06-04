@@ -1,22 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { faqs } from "@/data/faq";
 
 type Message = {
   role: "user" | "bot";
   text: string;
 };
 
-function getBotResponse(input: string): string {
-  const lower = input.toLowerCase();
-  for (const faq of faqs) {
-    if (faq.keywords.some((kw) => lower.includes(kw.toLowerCase()))) {
-      return faq.answer;
-    }
-  }
-  return "ご質問ありがとうございます。詳しくはお問い合わせページよりご連絡ください。";
-}
+const ERROR_MESSAGE =
+  "回答を取得できませんでした。しばらくしてからお試しください。";
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,22 +19,49 @@ export default function ChatBot() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  function handleSend() {
+  async function handleSend() {
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || isLoading) return;
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", text: trimmed },
-      { role: "bot", text: getBotResponse(trimmed) },
-    ]);
     setInput("");
+    setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: trimmed }),
+      });
+
+      if (!res.ok) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "bot", text: ERROR_MESSAGE },
+        ]);
+        return;
+      }
+
+      const data = await res.json();
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: data.answer },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: ERROR_MESSAGE },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -95,6 +114,13 @@ export default function ChatBot() {
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="max-w-[78%] px-3 py-2 rounded-2xl text-sm bg-gray-100 text-gray-500 rounded-bl-sm">
+                  考え中…
+                </div>
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
 
@@ -106,11 +132,12 @@ export default function ChatBot() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="メッセージを入力..."
-              className="flex-1 text-sm bg-gray-100 rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-blue-400"
+              disabled={isLoading}
+              className="flex-1 text-sm bg-gray-100 rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
             />
             <button
               onClick={handleSend}
-              disabled={!input.trim()}
+              disabled={!input.trim() || isLoading}
               className="w-9 h-9 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white rounded-full flex items-center justify-center transition-colors flex-shrink-0"
               aria-label="送信"
             >

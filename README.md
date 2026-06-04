@@ -1,20 +1,19 @@
 # Taskmate
 
-**Chapter 4「チャットボットを作る」** のサンプルプロジェクトです。
+**Chapter 5「AIをチャットに接続する」** のサンプルプロジェクトです。
 
-架空のタスク管理SaaS「Taskmate」のランディングページに、FAQ データを使ったキーワードマッチング型のチャットボットを追加しています。
+架空のタスク管理SaaS「Taskmate」のランディングページに、Gemini API を使った AI チャットボットを接続しています。
 
 ---
 
 ## このチャプターで学ぶこと
 
-- **Client Component の使い方** — `"use client"` を付けて、ブラウザ上で動くインタラクティブな UI を作る
-- **React Hooks による状態管理** — `useState` でメッセージ・入力・開閉状態を扱う
-- **チャット UI の実装** — フローティングボタン、メッセージ一覧、入力欄・送信ボタン
-- **キーワードマッチングによる自動応答** — `data/faq.ts` の `keywords` を参照し、ユーザーの入力に応じて回答を返す
-- **LP への組み込み** — `page.tsx` に `ChatBot` コンポーネントを追加する
+- **API Route の作成** — `app/api/chat/route.ts` で POST を受け、AI 回答を JSON で返す
+- **環境変数の設定** — API キーをサーバー側だけで使う（クライアントに露出させない）
+- **フロントエンドから API を呼び出す** — `ChatBot.tsx` から `fetch` で `/api/chat` を叩く
+- **AI の回答を画面に表示する** — 返ってきた `{ answer }` をチャット UI に描画する
 
-AI による回答生成は **Chapter 5** で行います。
+プロンプト設計やロール付与は **Chapter 6** で行います。
 
 ---
 
@@ -23,50 +22,65 @@ AI による回答生成は **Chapter 5** で行います。
 ```
 Taskmate/
 ├── app/
-│   ├── layout.tsx       # レイアウト・メタ情報
-│   ├── page.tsx         # ページ本体（各セクション + ChatBot）
-│   └── globals.css      # グローバルスタイル
+│   ├── api/
+│   │   └── chat/
+│   │       └── route.ts   # チャット API（POST）
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── globals.css
 ├── components/
-│   ├── ChatBot.tsx      # キーワードマッチ型チャット UI
-│   ├── Header.tsx       # ナビゲーションヘッダー
-│   ├── Hero.tsx         # ファーストビュー（モックUI付き）
-│   ├── Problem.tsx      # 課題提示セクション
-│   ├── Features.tsx     # 機能紹介セクション
-│   ├── HowItWorks.tsx   # 使い方ステップ（モックUI付き）
-│   ├── Pricing.tsx      # 料金プランセクション
-│   ├── FAQ.tsx          # よくある質問（アコーディオン）
-│   ├── CTA.tsx          # コンバージョンセクション
-│   └── Footer.tsx       # フッター
+│   ├── ChatBot.tsx        # AI チャット UI
+│   └── …                  # LP 各セクション
+├── lib/
+│   └── ai.ts              # Gemini 呼び出し（Vercel AI SDK）
 └── data/
-    ├── service.ts       # サービス情報・機能・料金プランのデータ定義
-    └── faq.ts           # FAQ データ（LP 表示 + チャットボットのキーワード用）
+    ├── service.ts
+    └── faq.ts             # LP の FAQ セクション用（AI には渡さない）
 ```
 
 ---
 
 ## 起動方法
 
+### 1. 依存関係のインストール
+
 ```bash
 npm install
+```
+
+### 2. 環境変数の設定
+
+`.env.local.example` をコピーして `.env.local` を作成し、API キーを設定します。
+
+```bash
+cp .env.local.example .env.local
+```
+
+`.env.local` の例:
+
+```env
+GOOGLE_GENERATIVE_AI_API_KEY=your_key_here
+AI_MODEL=gemini-2.5-flash-lite
+```
+
+API キーは [Google AI Studio](https://aistudio.google.com/apikey) から取得できます（無料枠あり）。
+
+### 3. 開発サーバーの起動
+
+```bash
 npm run dev
 ```
 
-ブラウザで [http://localhost:3000](http://localhost:3000) を開き、右下のチャットボタンからメッセージを送信して応答を確認できます。
-
-「無料」「解約」「スマホ」などのキーワードを含む質問を送ると、FAQ に対応する回答が返ります。
+ブラウザで [http://localhost:3000](http://localhost:3000) を開き、右下のチャットからメッセージを送信して AI の回答を確認できます。
 
 ---
 
 ## デプロイ（Vercel）
 
-Chapter 3 と同様、環境変数なしで Vercel にデプロイできます。
+Vercel の Project Settings → **Environment Variables** に、ローカルと同じ変数を登録してください。
 
-1. このリポジトリを GitHub に push する
-2. [vercel.com](https://vercel.com) にアクセスし、GitHub アカウントでサインアップ
-3. 「Add New Project」からリポジトリを選択
-4. 設定はデフォルトのままで「Deploy」をクリック
-
-デプロイが完了すると、`https://your-project.vercel.app` のような URL が発行されます。
+- `GOOGLE_GENERATIVE_AI_API_KEY`
+- `AI_MODEL`（任意。未設定時は `gemini-2.5-flash-lite`）
 
 ---
 
@@ -74,8 +88,9 @@ Chapter 3 と同様、環境変数なしで Vercel にデプロイできます�
 
 | 技術                    | 用途                         |
 | ----------------------- | ---------------------------- |
-| Next.js 16 (App Router) | フレームワーク               |
-| React 19 (Client Component) | チャット UI の状態管理   |
+| Next.js 16 (App Router) | フレームワーク・API Route    |
 | TypeScript              | 型安全な実装                 |
 | Tailwind CSS v4         | スタイリング                 |
+| Vercel AI SDK (`ai`)    | AI 呼び出しの共通インターフェース |
+| `@ai-sdk/google`        | Google Gemini API Provider   |
 | Vercel                  | ホスティング                 |
