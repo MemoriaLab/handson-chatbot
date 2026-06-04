@@ -51,3 +51,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# fine-tuning (Chapter 6.5)
+finetuning/output/*.jsonl
+finetuning/output/raw/
+finetuning/.venv/
+finetuning/config.yaml

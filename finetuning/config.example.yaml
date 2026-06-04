@@ -1,0 +1,12 @@
+# config.example.yaml をコピーして config.yaml を作成してください。
+# cp config.example.yaml config.yaml
+
+interlocutor_id: "" # list_interlocutors.py で選んだ話者 ID（例: AH）
+
+max_persona_examples: 250
+validation_ratio: 0.1
+seed: 42
+
+# 出力先（リポジトリルートからの相対パス）
+output_dir: output
+taskmate_dir: taskmate

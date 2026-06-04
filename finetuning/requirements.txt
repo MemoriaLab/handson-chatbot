@@ -1,0 +1,5 @@
+# real-persona-chat は Hub 上の loading script 形式のため 4.0 未満が必要
+datasets>=2.19.0,<4.0.0
+huggingface_hub>=0.26.0
+PyYAML>=6.0.1
+tqdm>=4.66.0

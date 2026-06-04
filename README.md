@@ -1,12 +1,22 @@
 # Taskmate
 
-**Chapter 6「プロンプトで役割を与える」** のサンプルプロジェクトです。
+**Chapter 6「プロンプトで役割を与える」** および **Chapter 6.5「キャラクター性と回答の安定性を上げる。fine-tuning」** のサンプルプロジェクトです。
 
 架空のタスク管理SaaS「Taskmate」のランディングページに、Gemini API を使った問い合わせ対応チャットボットを接続しています。
 
 ---
 
-## このチャプターで学ぶこと
+## Chapter 6.5（fine-tuning）
+
+応用編の手順・データ準備・Vertex AI チューニングは **[finetuning/README.md](finetuning/README.md)** にまとめています。
+
+- **キャラクター性**: real-persona-chat の口調を学習
+- **回答の安定性**: Taskmate の FAQ / サービス情報を学習データに含める
+- アプリのチャットで「Chapter 6.5 比較モード」から base / プロンプト版 / fine-tuning 版を比較
+
+---
+
+## このチャプターで学ぶこと（Chapter 6）
 
 - **システムプロンプトの設定** — `generateText` の `system` オプションで AI に役割を与える
 - **役割の定義** — 問い合わせ対応チャットボットとしての振る舞いを指示する
@@ -19,22 +29,16 @@
 
 ```
 Taskmate/
-├── app/
-│   ├── api/
-│   │   └── chat/
-│   │       └── route.ts   # チャット API（POST）
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-├── components/
-│   ├── ChatBot.tsx        # AI チャット UI
-│   └── …                  # LP 各セクション
+├── finetuning/            # Chapter 6.5: JSONL 生成・Vertex 手順
+├── app/api/chat/route.ts
+├── components/ChatBot.tsx
 ├── lib/
-│   ├── ai.ts              # Gemini 呼び出し（Vercel AI SDK）
-│   └── prompt.ts          # システムプロンプトの組み立て
+│   ├── ai.ts              # Gemini / Vertex（比較モード）
+│   ├── prompt.ts          # Chapter 6 システムプロンプト
+│   └── finetune-prompt.ts # 学習時と同じ system（ペルソナ付き）
 └── data/
-    ├── service.ts         # サービス情報（LP・AI プロンプト共用）
-    └── faq.ts             # FAQ データ（LP・AI プロンプト共用）
+    ├── service.ts
+    └── faq.ts
 ```
 
 ---
@@ -81,6 +85,8 @@ Vercel の Project Settings → **Environment Variables** に、ローカルと�
 - `GOOGLE_GENERATIVE_AI_API_KEY`
 - `AI_MODEL`（任意。未設定時は `gemini-2.5-flash-lite`）
 
+Chapter 6.5 の fine-tuning 版比較では `GOOGLE_VERTEX_PROJECT` と `AI_TUNED_ENDPOINT_ID` も必要です（詳細は [finetuning/README.md](finetuning/README.md)）。
+
 ---
 
 ## 技術スタック
@@ -92,4 +98,5 @@ Vercel の Project Settings → **Environment Variables** に、ローカルと�
 | Tailwind CSS v4         | スタイリング                 |
 | Vercel AI SDK (`ai`)    | AI 呼び出しの共通インターフェース |
 | `@ai-sdk/google`        | Google Gemini API Provider   |
+| `@ai-sdk/google-vertex` | fine-tuning 済みモデル（Chapter 6.5） |
 | Vercel                  | ホスティング                 |
