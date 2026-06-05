@@ -1,7 +1,21 @@
+import { APICallError } from "ai";
 import { NextRequest, NextResponse } from "next/server";
-import { generateAnswer } from "@/lib/ai";
-import { buildChatPrompt } from "@/lib/prompt";
-import { searchFaqs } from "@/lib/searchFaq";
+import { generateRagAnswer } from "@/lib/rag";
+
+function getErrorMessage(error: unknown): { message: string; status: number } {
+  if (APICallError.isInstance(error) && error.statusCode === 429) {
+    return {
+      message:
+        "Gemini API の利用上限に達しました。しばらく待ってから再度お試しください。",
+      status: 429,
+    };
+  }
+
+  return {
+    message: "回答を取得できませんでした。しばらくしてからお試しください。",
+    status: 500,
+  };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,25 +29,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const relatedFaqs = searchFaqs(message, { limit: 3 });
-
-    const prompt = buildChatPrompt({
-      message,
-      relatedFaqs,
-    });
-
-    const answer = await generateAnswer({ message: prompt });
+    const { answer, relatedDocuments } = await generateRagAnswer(message);
 
     return NextResponse.json({
       answer,
-      relatedFaqs,
+      relatedDocuments,
     });
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json(
-      { error: "failed to generate answer" },
-      { status: 500 }
-    );
+    const { message, status } = getErrorMessage(error);
+
+    return NextResponse.json({ error: message }, { status });
   }
 }

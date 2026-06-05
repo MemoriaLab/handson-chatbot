@@ -4,6 +4,9 @@ export type Faq = {
   keywords: string[];
 };
 
+// embedding は scripts/generate-faq-embeddings.ts で生成し data/faqIndex.ts に保存します。
+// FAQ を更新したら `npm run generate:embeddings` を実行してください。
+
 export const faqs: Faq[] = [
   {
     question: "無料プランはありますか？",

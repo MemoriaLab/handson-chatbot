@@ -43,15 +43,31 @@ export default function ChatBot() {
       });
 
       if (!res.ok) {
+        const data = await res.json().catch(() => null);
         setMessages((prev) => [
           ...prev,
-          { role: "bot", text: ERROR_MESSAGE },
+          {
+            role: "bot",
+            text: data?.error ?? ERROR_MESSAGE,
+          },
         ]);
         return;
       }
 
       const data = await res.json();
-      console.log("relatedFaqs", data.relatedFaqs);
+      console.log("[RAG] 質問:", trimmed);
+      console.log(
+        "[RAG] 読み込んだドキュメント:",
+        data.relatedDocuments?.length
+          ? data.relatedDocuments.map(
+              (doc: { id: string; score: number; content: string }) => ({
+                id: doc.id,
+                score: doc.score?.toFixed?.(3) ?? doc.score,
+                content: doc.content,
+              })
+            )
+          : "なし（閾値未満）"
+      );
       setMessages((prev) => [
         ...prev,
         { role: "bot", text: data.answer },

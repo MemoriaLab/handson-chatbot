@@ -1,3 +1,12 @@
+/**
+ * Chapter 8 のキーワードベース FAQ 検索（簡易 RAG）
+ *
+ * Chapter 9 では embedding + ベクトル検索による RAG（lib/rag.ts）に置き換えました。
+ * このファイルは Chapter 8 との対比のため残しています。
+ *
+ * FAQ を更新した場合は `npm run generate:embeddings` も実行してください。
+ */
+
 import { faqs, type Faq } from "@/data/faq";
 
 type SearchFaqOptions = {

@@ -1,4 +1,4 @@
-import type { Faq } from "@/data/faq";
+import type { DocumentChunk } from "@/lib/chunk";
 import { serviceInfo } from "@/data/service";
 
 export function buildSystemPrompt(): string {
@@ -44,28 +44,24 @@ ${features}
 ${pricing}`;
 }
 
-export function formatFaqsForPrompt(faqs: Faq[]): string {
-  if (faqs.length === 0) {
+export function formatDocumentsForPrompt(documents: DocumentChunk[]): string {
+  if (documents.length === 0) {
     return "関連するFAQは見つかりませんでした。";
   }
 
-  return faqs
-    .map((faq) => {
-      return `Q. ${faq.question}\nA. ${faq.answer}`;
-    })
-    .join("\n\n");
+  return documents.map((doc) => doc.content).join("\n\n");
 }
 
 type BuildChatPromptParams = {
   message: string;
-  relatedFaqs: Faq[];
+  documents: DocumentChunk[];
 };
 
 export function buildChatPrompt({
   message,
-  relatedFaqs,
+  documents,
 }: BuildChatPromptParams): string {
-  const faqText = formatFaqsForPrompt(relatedFaqs);
+  const faqText = formatDocumentsForPrompt(documents);
 
   return `
 以下はTaskmateに関するFAQです。
