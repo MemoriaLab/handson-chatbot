@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateAnswer } from "@/lib/ai";
+import { buildChatPrompt } from "@/lib/prompt";
+import { searchFaqs } from "@/lib/searchFaq";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,9 +15,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const answer = await generateAnswer({ message });
+    const relatedFaqs = searchFaqs(message, { limit: 3 });
 
-    return NextResponse.json({ answer });
+    const prompt = buildChatPrompt({
+      message,
+      relatedFaqs,
+    });
+
+    const answer = await generateAnswer({ message: prompt });
+
+    return NextResponse.json({
+      answer,
+      relatedFaqs,
+    });
   } catch (error) {
     console.error(error);
 

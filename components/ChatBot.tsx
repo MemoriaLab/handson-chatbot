@@ -51,6 +51,7 @@ export default function ChatBot() {
       }
 
       const data = await res.json();
+      console.log("relatedFaqs", data.relatedFaqs);
       setMessages((prev) => [
         ...prev,
         { role: "bot", text: data.answer },

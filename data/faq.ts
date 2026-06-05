@@ -1,4 +1,10 @@
-export const faqs = [
+export type Faq = {
+  question: string;
+  answer: string;
+  keywords: string[];
+};
+
+export const faqs: Faq[] = [
   {
     question: "無料プランはありますか？",
     answer: "はい。3ユーザーまで無料で利用できます。",
