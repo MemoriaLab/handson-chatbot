@@ -11,6 +11,23 @@ type Message = {
 const ERROR_MESSAGE =
   "回答を取得できませんでした。しばらくしてからお試しください。";
 
+function createSessionId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `session-${Date.now()}`;
+}
+
+function getOrCreateSessionId(): string {
+  const key = "taskmate-chat-session-id";
+  const existing = localStorage.getItem(key);
+  if (existing) return existing;
+
+  const sessionId = createSessionId();
+  localStorage.setItem(key, sessionId);
+  return sessionId;
+}
+
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -21,7 +38,12 @@ export default function ChatBot() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSessionId(getOrCreateSessionId());
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,7 +51,11 @@ export default function ChatBot() {
 
   async function handleSend() {
     const trimmed = input.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading || !sessionId) return;
+
+    const history = messages
+      .slice(1)
+      .map((msg) => ({ role: msg.role, text: msg.text }));
 
     setInput("");
     setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
@@ -39,7 +65,7 @@ export default function ChatBot() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message: trimmed, history, sessionId }),
       });
 
       if (!res.ok) {

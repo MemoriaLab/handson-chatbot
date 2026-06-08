@@ -1,6 +1,7 @@
 import { APICallError } from "ai";
 import { NextRequest, NextResponse } from "next/server";
 import { generateRagAnswer } from "@/lib/rag";
+import type { ChatHistoryMessage } from "@/lib/prompt";
 
 function getErrorMessage(error: unknown): { message: string; status: number } {
   if (APICallError.isInstance(error) && error.statusCode === 429) {
@@ -17,10 +18,33 @@ function getErrorMessage(error: unknown): { message: string; status: number } {
   };
 }
 
+function parseHistory(value: unknown): ChatHistoryMessage[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (item): item is ChatHistoryMessage =>
+        typeof item === "object" &&
+        item !== null &&
+        (item.role === "user" || item.role === "bot") &&
+        typeof item.text === "string" &&
+        item.text.trim().length > 0
+    )
+    .map((item) => ({
+      role: item.role,
+      text: item.text.trim(),
+    }));
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const message = body.message;
+    const history = parseHistory(body.history);
+    const sessionId =
+      typeof body.sessionId === "string" && body.sessionId.trim().length > 0
+        ? body.sessionId.trim()
+        : "default";
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(
@@ -29,7 +53,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { answer, relatedDocuments } = await generateRagAnswer(message);
+    const { answer, relatedDocuments } = await generateRagAnswer({
+      query: message,
+      history,
+      sessionId,
+    });
 
     return NextResponse.json({
       answer,

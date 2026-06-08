@@ -3,7 +3,7 @@ type ChatMessageContentProps = {
 };
 
 function renderInline(text: string) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const parts = text.split(/(\*\*[^*]+\*\*|https?:\/\/[^\s]+)/g);
 
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
@@ -11,6 +11,19 @@ function renderInline(text: string) {
         <strong key={i} className="font-semibold">
           {part.slice(2, -2)}
         </strong>
+      );
+    }
+    if (/^https?:\/\//.test(part)) {
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline break-all"
+        >
+          {part}
+        </a>
       );
     }
     return part;
